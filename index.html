@@ -270,7 +270,8 @@
     grid-template-columns: repeat(3, 58px);
     grid-template-rows: repeat(3, 58px);
     gap: 6px;
-    margin-top: 16px;
+    margin: 16px auto 0;
+    width: fit-content;
   }
 
   .control-btn {
@@ -425,7 +426,8 @@
       grid-template-columns: repeat(3, 52px);
       grid-template-rows: repeat(3, 52px);
       gap: 5px;
-      margin-top: 12px;
+      margin: 12px auto 0;
+      width: fit-content;
     }
 
     .dpad .control-btn {
@@ -451,6 +453,8 @@
     .dpad {
       grid-template-columns: repeat(3, 46px);
       grid-template-rows: repeat(3, 46px);
+      margin: 12px auto 0;
+      width: fit-content;
     }
 
     .dpad .control-btn {
@@ -823,7 +827,7 @@
     startOverlay.classList.add('hidden');
     gameOverOverlay.classList.add('hidden');
     if (gameLoop) clearInterval(gameLoop);
-    gameLoop = setInterval(tick, 210);
+    gameLoop = setInterval(tick, 290);
   }
 
   function gameOver() {
