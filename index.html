@@ -11,6 +11,10 @@
     box-sizing: border-box;
   }
 
+  html, body {
+    height: 100%;
+  }
+
   body {
     font-family: 'Comic Sans MS', 'Quicksand', 'Hiragino Maru Gothic ProN', sans-serif;
     min-height: 100vh;
@@ -21,10 +25,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
+    justify-content: flex-start;
+    padding: 20px 16px 32px;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   body::before,
@@ -324,6 +328,144 @@
     font-size: 0.78rem;
     margin: 0 2px;
     border: 1px solid #e0efff;
+  }
+
+  @media (max-width: 480px) {
+    body {
+      padding: 14px 10px 24px;
+    }
+
+    .title {
+      font-size: 1.8rem;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.82rem;
+      margin-bottom: 14px;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 370px;
+      padding: 14px;
+      border-radius: 24px;
+    }
+
+    .info-bar {
+      padding: 9px 12px;
+      margin-bottom: 10px;
+      border-radius: 16px;
+      gap: 8px;
+    }
+
+    .score-box {
+      font-size: 0.9rem;
+      gap: 5px;
+    }
+
+    .score-box .emoji {
+      font-size: 1.15rem;
+    }
+
+    .score-value {
+      padding: 3px 10px;
+      min-width: 42px;
+      font-size: 0.88rem;
+      border-radius: 12px;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      padding: 4px;
+      border-radius: 20px;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+    }
+
+    .overlay {
+      inset: 4px;
+      border-radius: 16px;
+      padding: 14px;
+      gap: 10px;
+    }
+
+    .overlay-row {
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin-bottom: 0;
+    }
+
+    .overlay-chip {
+      padding: 4px 10px;
+      font-size: 0.7rem;
+    }
+
+    .overlay-title {
+      font-size: 1.25rem;
+    }
+
+    .overlay-text {
+      font-size: 0.78rem;
+      line-height: 1.55;
+      max-width: 240px;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      font-size: 0.92rem;
+    }
+
+    .dpad {
+      grid-template-columns: repeat(3, 52px);
+      grid-template-rows: repeat(3, 52px);
+      gap: 5px;
+      margin-top: 12px;
+    }
+
+    .dpad .control-btn {
+      width: 52px;
+      height: 52px;
+      font-size: 1.25rem;
+      border-radius: 16px;
+    }
+
+    .hint {
+      margin-top: 12px;
+      font-size: 0.72rem;
+      line-height: 1.8;
+    }
+
+    .hint kbd {
+      padding: 2px 6px;
+      font-size: 0.7rem;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .dpad {
+      grid-template-columns: repeat(3, 46px);
+      grid-template-rows: repeat(3, 46px);
+    }
+
+    .dpad .control-btn {
+      width: 46px;
+      height: 46px;
+      font-size: 1.1rem;
+    }
+
+    .game-container {
+      padding: 12px 10px;
+    }
+
+    .title {
+      font-size: 1.6rem;
+    }
   }
 </style>
 </head>
