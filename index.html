@@ -2,17 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Npochamu Snake Game 🐣🌸</title>
 <style>
   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
 
   html, body {
     height: 100%;
+    width: 100%;
+    touch-action: manipulation;
+    overscroll-behavior: contain;
   }
 
   body {
@@ -25,10 +29,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    padding: 20px 16px 32px;
+    justify-content: center;
+    padding: 10px 12px 16px;
     position: relative;
     overflow-x: hidden;
+    overflow-y: auto;
   }
 
   body::before,
@@ -64,24 +69,36 @@
     50% { transform: translateY(18px) scale(1.06); }
   }
 
+  @keyframes countdown-pop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    40%  { transform: scale(1.25); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+
   .title {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     font-weight: bold;
     letter-spacing: 1px;
     background: linear-gradient(90deg, #7ec8ff, #ffa8c5, #ffd98a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
     text-align: center;
     position: relative;
     z-index: 10;
+    line-height: 1.15;
   }
 
   .subtitle {
     color: #8bb8e0;
-    font-size: 0.95rem;
-    margin-bottom: 22px;
+    font-size: 0.88rem;
+    margin-bottom: 12px;
     position: relative;
     z-index: 10;
   }
@@ -90,48 +107,89 @@
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border-radius: 30px;
-    padding: 22px;
+    border-radius: 28px;
+    padding: 18px;
     box-shadow:
       0 18px 50px rgba(126, 180, 230, 0.18),
       0 0 0 1px rgba(255, 255, 255, 0.9) inset;
     border: 3px solid #e0efff;
     position: relative;
     z-index: 10;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .speed-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .speed-label {
+    color: #7fa8cb;
+    font-size: 0.82rem;
+    font-weight: bold;
+    margin-right: 2px;
+  }
+
+  .speed-btn {
+    padding: 5px 12px;
+    border: 2px solid #d8ecff;
+    background: white;
+    color: #6fa5cf;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s ease;
+  }
+
+  .speed-btn:hover { background: #f0f8ff; }
+
+  .speed-btn.active {
+    background: linear-gradient(135deg, #89c8ff, #ffb6cc);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 6px rgba(126,180,230,0.25);
   }
 
   .info-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
-    padding: 11px 18px;
+    margin-bottom: 10px;
+    padding: 9px 14px;
     background: linear-gradient(90deg, #eaf5ff, #fff6f8, #fff9ea);
-    border-radius: 20px;
+    border-radius: 18px;
     border: 2px dashed #c7e3ff;
   }
 
   .score-box {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     font-weight: bold;
     color: #5a9fd4;
-    font-size: 1.05rem;
+    font-size: 1rem;
   }
 
   .score-box .emoji {
-    font-size: 1.45rem;
+    font-size: 1.3rem;
   }
 
   .score-value {
     background: white;
-    padding: 4px 14px;
-    border-radius: 14px;
-    min-width: 52px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    min-width: 46px;
     text-align: center;
     box-shadow: 0 2px 8px rgba(126, 180, 230, 0.15);
     color: #4a8cc0;
+    font-size: 0.9rem;
   }
 
   .best-score {
@@ -144,37 +202,42 @@
 
   .canvas-wrapper {
     position: relative;
-    border-radius: 24px;
+    border-radius: 22px;
     overflow: hidden;
-    padding: 6px;
+    padding: 5px;
     background: linear-gradient(135deg, #e3f1ff, #fff0f4, #fff5e0);
     box-shadow: inset 0 2px 14px rgba(255,255,255,0.9);
+    touch-action: none;
   }
 
   canvas {
     display: block;
-    border-radius: 20px;
+    border-radius: 18px;
     background:
       radial-gradient(circle at 25% 25%, #f6fbff 0%, transparent 45%),
       radial-gradient(circle at 75% 75%, #fff7fa 0%, transparent 45%),
       linear-gradient(135deg, #fdfcff 0%, #f4faff 100%);
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    touch-action: none;
   }
 
   .overlay {
     position: absolute;
-    inset: 6px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.9);
+    inset: 5px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
+    gap: 12px;
     z-index: 5;
     transition: opacity 0.3s ease;
-    padding: 24px;
+    padding: 18px;
   }
 
   .overlay.hidden {
@@ -182,8 +245,19 @@
     pointer-events: none;
   }
 
+  .overlay-countdown {
+    font-size: 5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #7ec8ff, #ffa8c5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: countdown-pop 0.55s ease-out;
+    line-height: 1;
+  }
+
   .overlay-title {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: bold;
     background: linear-gradient(90deg, #5ba9e0, #e09ab5);
     -webkit-background-clip: text;
@@ -194,35 +268,35 @@
 
   .overlay-text {
     color: #7fa8cb;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     text-align: center;
     max-width: 280px;
-    line-height: 1.7;
+    line-height: 1.65;
   }
 
   .overlay-row {
     display: flex;
-    gap: 18px;
+    gap: 14px;
     align-items: center;
     justify-content: center;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
 
   .overlay-chip {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     background: white;
-    padding: 6px 12px;
+    padding: 5px 11px;
     border-radius: 999px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #6fa5cf;
     border: 1.5px solid #d8ecff;
   }
 
   .btn {
-    padding: 11px 30px;
-    font-size: 1rem;
+    padding: 10px 28px;
+    font-size: 0.95rem;
     font-weight: bold;
     color: white;
     border: none;
@@ -230,8 +304,8 @@
     cursor: pointer;
     background: linear-gradient(135deg, #89c8ff, #ffb6cc);
     box-shadow:
-      0 6px 0 #6aaadc,
-      0 8px 18px rgba(126, 180, 230, 0.28);
+      0 5px 0 #6aaadc,
+      0 7px 16px rgba(126, 180, 230, 0.28);
     transition: all 0.15s ease;
     font-family: inherit;
     position: relative;
@@ -240,17 +314,17 @@
   }
 
   .btn:hover {
-    transform: translateY(2px);
+    transform: translateY(1px);
     box-shadow:
       0 4px 0 #6aaadc,
-      0 6px 14px rgba(126, 180, 230, 0.28);
+      0 5px 13px rgba(126, 180, 230, 0.28);
   }
 
   .btn:active {
-    transform: translateY(6px);
+    transform: translateY(5px);
     box-shadow:
       0 0 0 #6aaadc,
-      0 2px 10px rgba(126, 180, 230, 0.28);
+      0 2px 9px rgba(126, 180, 230, 0.28);
   }
 
   .btn::before {
@@ -259,27 +333,49 @@
     top: 3px;
     left: 15%;
     right: 15%;
-    height: 28%;
+    height: 26%;
     background: linear-gradient(180deg, rgba(255,255,255,0.55), transparent);
     border-radius: 999px;
     pointer-events: none;
   }
 
+  .btn-secondary {
+    background: white;
+    color: #6fa5cf;
+    border: 2px solid #d8ecff;
+    box-shadow: 0 4px 0 #e8f2ff;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+  }
+
+  .btn-secondary::before { display: none; }
+
+  .btn-secondary:hover { background: #f6fbff; }
+  .btn-secondary:active { transform: translateY(4px); box-shadow: 0 0 0 #e8f2ff; }
+
+  .action-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
   .dpad {
     display: grid;
-    grid-template-columns: repeat(3, 58px);
-    grid-template-rows: repeat(3, 58px);
-    gap: 6px;
-    margin: 16px auto 0;
+    grid-template-columns: repeat(3, 54px);
+    grid-template-rows: repeat(3, 54px);
+    gap: 5px;
+    margin: 12px auto 0;
     width: fit-content;
   }
 
   .control-btn {
-    width: 58px;
-    height: 58px;
+    width: 54px;
+    height: 54px;
     border-radius: 18px;
     border: none;
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     cursor: pointer;
     background: white;
     color: #6fa5cf;
@@ -290,6 +386,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
   }
 
   .control-btn:hover {
@@ -310,165 +409,194 @@
   .dpad .down { grid-column: 2; grid-row: 3; }
 
   .hint {
-    margin-top: 16px;
+    margin-top: 12px;
     text-align: center;
     color: #8bb0d1;
-    font-size: 0.82rem;
-    line-height: 1.9;
+    font-size: 0.76rem;
+    line-height: 1.8;
     position: relative;
     z-index: 10;
   }
 
   .hint kbd {
     background: white;
-    padding: 3px 9px;
-    border-radius: 8px;
+    padding: 2px 7px;
+    border-radius: 7px;
     box-shadow: 0 2px 4px rgba(126, 180, 230, 0.12);
     color: #5a93be;
     font-weight: bold;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     margin: 0 2px;
     border: 1px solid #e0efff;
   }
 
+  /* ---------- RESPONSIVE: < 480px (phones) ---------- */
   @media (max-width: 480px) {
     body {
-      padding: 14px 10px 24px;
+      padding: 8px 8px 12px;
+      justify-content: flex-start;
     }
 
     .title {
-      font-size: 1.8rem;
-      margin-bottom: 4px;
+      font-size: 1.6rem;
+      margin-bottom: 2px;
     }
 
     .subtitle {
-      font-size: 0.82rem;
-      margin-bottom: 14px;
+      font-size: 0.76rem;
+      margin-bottom: 10px;
     }
 
     .game-container {
-      width: 100%;
       max-width: 370px;
-      padding: 14px;
+      padding: 12px;
       border-radius: 24px;
     }
 
-    .info-bar {
-      padding: 9px 12px;
-      margin-bottom: 10px;
-      border-radius: 16px;
-      gap: 8px;
-    }
-
-    .score-box {
-      font-size: 0.9rem;
+    .speed-bar {
+      margin-bottom: 8px;
       gap: 5px;
     }
 
-    .score-box .emoji {
-      font-size: 1.15rem;
+    .speed-label { font-size: 0.74rem; }
+    .speed-btn {
+      padding: 4px 10px;
+      font-size: 0.72rem;
     }
+
+    .info-bar {
+      padding: 7px 10px;
+      margin-bottom: 8px;
+      border-radius: 14px;
+      gap: 6px;
+    }
+
+    .score-box {
+      font-size: 0.82rem;
+      gap: 4px;
+    }
+
+    .score-box .emoji { font-size: 1.05rem; }
 
     .score-value {
-      padding: 3px 10px;
-      min-width: 42px;
-      font-size: 0.88rem;
-      border-radius: 12px;
+      padding: 2px 8px;
+      min-width: 38px;
+      font-size: 0.8rem;
+      border-radius: 10px;
     }
 
-    .canvas-wrapper {
-      width: 100%;
-      padding: 4px;
-      border-radius: 20px;
-    }
-
-    canvas {
-      width: 100%;
-      height: auto;
-      aspect-ratio: 1 / 1;
-      border-radius: 16px;
-    }
+    .canvas-wrapper { padding: 4px; border-radius: 18px; }
+    canvas { border-radius: 14px; }
 
     .overlay {
       inset: 4px;
-      border-radius: 16px;
-      padding: 14px;
-      gap: 10px;
+      border-radius: 14px;
+      padding: 12px;
+      gap: 8px;
+    }
+
+    .overlay-countdown {
+      font-size: 3.8rem;
     }
 
     .overlay-row {
       flex-wrap: wrap;
-      gap: 6px 10px;
+      gap: 5px 9px;
       margin-bottom: 0;
     }
 
     .overlay-chip {
-      padding: 4px 10px;
-      font-size: 0.7rem;
+      padding: 4px 9px;
+      font-size: 0.68rem;
     }
 
-    .overlay-title {
-      font-size: 1.25rem;
-    }
+    .overlay-title { font-size: 1.15rem; }
 
     .overlay-text {
-      font-size: 0.78rem;
-      line-height: 1.55;
-      max-width: 240px;
+      font-size: 0.74rem;
+      line-height: 1.5;
+      max-width: 230px;
     }
 
     .btn {
-      padding: 10px 24px;
-      font-size: 0.92rem;
+      padding: 9px 22px;
+      font-size: 0.88rem;
     }
 
+    .action-bar { margin-top: 10px; gap: 8px; }
+
     .dpad {
-      grid-template-columns: repeat(3, 52px);
-      grid-template-rows: repeat(3, 52px);
-      gap: 5px;
-      margin: 12px auto 0;
-      width: fit-content;
+      grid-template-columns: repeat(3, 50px);
+      grid-template-rows: repeat(3, 50px);
+      gap: 4px;
+      margin: 10px auto 0;
     }
 
     .dpad .control-btn {
-      width: 52px;
-      height: 52px;
-      font-size: 1.25rem;
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
       border-radius: 16px;
     }
 
     .hint {
-      margin-top: 12px;
-      font-size: 0.72rem;
-      line-height: 1.8;
+      margin-top: 10px;
+      font-size: 0.68rem;
+      line-height: 1.75;
     }
 
     .hint kbd {
-      padding: 2px 6px;
-      font-size: 0.7rem;
+      padding: 2px 5px;
+      font-size: 0.66rem;
     }
   }
 
-  @media (max-width: 360px) {
+  /* ---------- SHORT HEIGHT phones (eg 375x667) ---------- */
+  @media (max-height: 720px) {
+    body { padding-top: 6px; padding-bottom: 8px; }
+
+    .title {
+      font-size: 1.35rem;
+      margin-bottom: 0px;
+    }
+
+    .subtitle {
+      font-size: 0.7rem;
+      margin-bottom: 6px;
+    }
+
+    .game-container {
+      padding: 10px;
+      border-radius: 22px;
+      max-width: 350px;
+    }
+
+    .speed-bar { margin-bottom: 6px; }
+    .info-bar { margin-bottom: 6px; padding: 6px 10px; }
+    .action-bar { margin-top: 8px; }
     .dpad {
       grid-template-columns: repeat(3, 46px);
       grid-template-rows: repeat(3, 46px);
-      margin: 12px auto 0;
-      width: fit-content;
+      margin: 8px auto 0;
+      gap: 4px;
     }
-
     .dpad .control-btn {
       width: 46px;
       height: 46px;
       font-size: 1.1rem;
     }
+    .hint { display: none; }
+  }
 
-    .game-container {
-      padding: 12px 10px;
+  @media (max-width: 360px) {
+    .dpad {
+      grid-template-columns: repeat(3, 42px);
+      grid-template-rows: repeat(3, 42px);
     }
-
-    .title {
-      font-size: 1.6rem;
+    .dpad .control-btn {
+      width: 42px;
+      height: 42px;
+      font-size: 1rem;
     }
   }
 </style>
@@ -479,6 +607,13 @@
 <p class="subtitle">A fluffy yogurt fairy adventure ~</p>
 
 <div class="game-container">
+  <div class="speed-bar">
+    <span class="speed-label">Speed:</span>
+    <button class="speed-btn" data-speed="slow">🐢 Slow</button>
+    <button class="speed-btn active" data-speed="normal">🐰 Normal</button>
+    <button class="speed-btn" data-speed="fast">🚀 Fast</button>
+  </div>
+
   <div class="info-bar">
     <div class="score-box">
       <span class="emoji">🫐</span>
@@ -495,6 +630,7 @@
   <div class="canvas-wrapper">
     <canvas id="gameCanvas" width="400" height="400"></canvas>
 
+    <!-- Start overlay -->
     <div class="overlay" id="startOverlay">
       <div class="overlay-row">
         <div class="overlay-chip">🌼 flower</div>
@@ -509,6 +645,24 @@
       <button class="btn" id="startBtn">Start Game</button>
     </div>
 
+    <!-- Countdown overlay -->
+    <div class="overlay hidden" id="countdownOverlay">
+      <div class="overlay-countdown" id="countdownNum">3</div>
+    </div>
+
+    <!-- Pause overlay -->
+    <div class="overlay hidden" id="pauseOverlay">
+      <div class="overlay-row">
+        <div class="overlay-chip">💤 Resting</div>
+      </div>
+      <div class="overlay-title">Take a Break</div>
+      <div class="overlay-text">
+        Press pause again or tap Resume ♡
+      </div>
+      <button class="btn" id="resumeBtn">▶ Resume</button>
+    </div>
+
+    <!-- Game over overlay -->
     <div class="overlay hidden" id="gameOverOverlay">
       <div class="overlay-row">
         <div class="overlay-chip">💤 oopsie</div>
@@ -519,6 +673,11 @@
       </div>
       <button class="btn" id="restartBtn">Play Again</button>
     </div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-secondary" id="pauseBtn" disabled>⏸ Pause</button>
+    <button class="btn btn-secondary" id="restartAlwaysBtn">🔁 Restart</button>
   </div>
 
   <div class="dpad">
@@ -542,9 +701,16 @@
   const bestScoreEl = document.getElementById('bestScore');
   const startOverlay = document.getElementById('startOverlay');
   const gameOverOverlay = document.getElementById('gameOverOverlay');
+  const pauseOverlay = document.getElementById('pauseOverlay');
+  const countdownOverlay = document.getElementById('countdownOverlay');
+  const countdownNum = document.getElementById('countdownNum');
   const startBtn = document.getElementById('startBtn');
   const restartBtn = document.getElementById('restartBtn');
+  const restartAlwaysBtn = document.getElementById('restartAlwaysBtn');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
   const finalScoreEl = document.getElementById('finalScore');
+  const speedBtns = document.querySelectorAll('.speed-btn');
 
   const GRID_SIZE = 20;
   const CELL_SIZE = canvas.width / GRID_SIZE;
@@ -552,10 +718,17 @@
   const FOOD_EMOJIS = ['🫐','🍓','🍡','🍪','🧁','🍑','🌸','🍒','🍩','🥛','🌼'];
   const SPARKLE_EMOJIS = ['✨','💫','🌸','🐣','🫧'];
 
-  let snake, direction, nextDirection, food, score, bestScore, gameLoop, isPaused, isRunning;
+  const SPEEDS = { slow: 380, normal: 290, fast: 200 };
+  let speedMode = 'normal';
+
+  let snake, direction, nextDirection, food, score, bestScore, gameLoop, isPaused, isRunning, isCountingDown;
 
   bestScore = parseInt(localStorage.getItem('npochamu_best') || '0', 10);
   bestScoreEl.textContent = bestScore;
+
+  function hideAllOverlays() {
+    [startOverlay, gameOverOverlay, pauseOverlay, countdownOverlay].forEach(o => o.classList.add('hidden'));
+  }
 
   function init() {
     snake = [
@@ -568,6 +741,7 @@
     score = 0;
     scoreEl.textContent = '0';
     isPaused = false;
+    isCountingDown = false;
     spawnFood();
     draw();
   }
@@ -601,7 +775,7 @@
   }
 
   function update() {
-    if (isPaused) return;
+    if (isPaused || isCountingDown) return;
 
     direction = nextDirection;
 
@@ -715,32 +889,41 @@
   }
 
   function drawSnakeSegment(gx, gy, index, isHead) {
-    const x = gx * CELL_SIZE + 1;
-    const y = gy * CELL_SIZE + 1;
-    const s = CELL_SIZE - 2;
-    const r = 9;
+    const pad = isHead ? 0 : 1;
+    const x = gx * CELL_SIZE + 1 + pad;
+    const y = gy * CELL_SIZE + 1 + pad;
+    const s = CELL_SIZE - 2 - pad * 2;
+    const r = isHead ? 10 : 8;
 
     ctx.save();
 
-    ctx.shadowColor = 'rgba(160, 200, 230, 0.25)';
-    ctx.shadowBlur = isHead ? 12 : 7;
+    ctx.shadowColor = isHead ? 'rgba(120, 170, 210, 0.38)' : 'rgba(140, 180, 220, 0.22)';
+    ctx.shadowBlur = isHead ? 16 : 7;
 
     const grad = ctx.createRadialGradient(
       x + s * 0.35, y + s * 0.35, 2,
-      x + s * 0.5, y + s * 0.5, s * 0.75
+      x + s * 0.5, y + s * 0.5, s * 0.8
     );
     grad.addColorStop(0, '#ffffff');
-    grad.addColorStop(0.55, '#f8fcff');
-    grad.addColorStop(1, '#e2eff9');
+    grad.addColorStop(0.5, '#f7fbff');
+    grad.addColorStop(1, isHead ? '#cfe4f5' : '#d9e7f3');
 
     roundRect(x, y, s, s, r);
     ctx.fillStyle = grad;
     ctx.fill();
 
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(180, 210, 235, 0.7)';
-    ctx.lineWidth = 1.2;
-    roundRect(x + 0.5, y + 0.5, s - 1, s - 1, r - 1);
+
+    // Deeper outline — improve contrast vs background
+    ctx.strokeStyle = isHead ? 'rgba(130, 175, 215, 0.85)' : 'rgba(150, 190, 225, 0.65)';
+    ctx.lineWidth = isHead ? 1.8 : 1.3;
+    roundRect(x + 0.4, y + 0.4, s - 0.8, s - 0.8, Math.max(r - 1, 2));
+    ctx.stroke();
+
+    // Inner soft highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 1;
+    roundRect(x + 2, y + 2, s - 4, s - 4, Math.max(r - 3, 2));
     ctx.stroke();
 
     if (isHead) {
@@ -748,56 +931,87 @@
       const cy = y + s / 2;
 
       let eyeOffsetX = 0, eyeOffsetY = 0;
-      if (direction.x === 1)  eyeOffsetX = 2.5;
-      if (direction.x === -1) eyeOffsetX = -2.5;
-      if (direction.y === 1)  eyeOffsetY = 2.5;
-      if (direction.y === -1) eyeOffsetY = -2.5;
+      if (direction.x === 1)  eyeOffsetX = 2.6;
+      if (direction.x === -1) eyeOffsetX = -2.6;
+      if (direction.y === 1)  eyeOffsetY = 2.6;
+      if (direction.y === -1) eyeOffsetY = -2.6;
 
-      const eyeY = cy - 2 + eyeOffsetY * 0.4;
-      const leftX = cx - 4 + eyeOffsetX * 0.4;
-      const rightX = cx + 4 + eyeOffsetX * 0.4;
+      const eyeY = cy - 2 + eyeOffsetY * 0.45;
+      const leftX = cx - 4.5 + eyeOffsetX * 0.45;
+      const rightX = cx + 4.5 + eyeOffsetX * 0.45;
 
+      // Eye white — bigger and clearer
       ctx.fillStyle = 'white';
       ctx.beginPath();
-      ctx.arc(leftX, eyeY, 3.2, 0, Math.PI * 2);
-      ctx.arc(rightX, eyeY, 3.2, 0, Math.PI * 2);
+      ctx.arc(leftX, eyeY, 3.7, 0, Math.PI * 2);
+      ctx.arc(rightX, eyeY, 3.7, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#3a4b5e';
+      // Outline for eyes (stronger face)
+      ctx.strokeStyle = 'rgba(140, 170, 200, 0.7)';
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+
+      // Pupils
+      ctx.fillStyle = '#2e4155';
       ctx.beginPath();
-      ctx.arc(leftX + eyeOffsetX * 0.3, eyeY + eyeOffsetY * 0.3, 1.7, 0, Math.PI * 2);
-      ctx.arc(rightX + eyeOffsetX * 0.3, eyeY + eyeOffsetY * 0.3, 1.7, 0, Math.PI * 2);
+      ctx.arc(leftX + eyeOffsetX * 0.35, eyeY + eyeOffsetY * 0.35, 2, 0, Math.PI * 2);
+      ctx.arc(rightX + eyeOffsetX * 0.35, eyeY + eyeOffsetY * 0.35, 2, 0, Math.PI * 2);
       ctx.fill();
 
+      // Eye sparkles
       ctx.fillStyle = 'white';
       ctx.beginPath();
-      ctx.arc(leftX + eyeOffsetX * 0.3 - 0.5, eyeY + eyeOffsetY * 0.3 - 0.5, 0.6, 0, Math.PI * 2);
-      ctx.arc(rightX + eyeOffsetX * 0.3 - 0.5, eyeY + eyeOffsetY * 0.3 - 0.5, 0.6, 0, Math.PI * 2);
+      ctx.arc(leftX + eyeOffsetX * 0.35 - 0.7, eyeY + eyeOffsetY * 0.35 - 0.7, 0.75, 0, Math.PI * 2);
+      ctx.arc(rightX + eyeOffsetX * 0.35 - 0.7, eyeY + eyeOffsetY * 0.35 - 0.7, 0.75, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = 'rgba(255, 170, 190, 0.55)';
+      // Pink cheeks — slightly bigger
+      ctx.fillStyle = 'rgba(255, 160, 185, 0.65)';
       ctx.beginPath();
-      ctx.ellipse(leftX - 2.2, eyeY + 4, 2, 1.3, 0, 0, Math.PI * 2);
-      ctx.ellipse(rightX + 2.2, eyeY + 4, 2, 1.3, 0, 0, Math.PI * 2);
+      ctx.ellipse(leftX - 2.6, eyeY + 4.6, 2.4, 1.6, 0, 0, Math.PI * 2);
+      ctx.ellipse(rightX + 2.6, eyeY + 4.6, 2.4, 1.6, 0, 0, Math.PI * 2);
       ctx.fill();
 
+      // Tiny smile
+      ctx.strokeStyle = 'rgba(120, 155, 190, 0.85)';
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      ctx.arc(cx, cy + 2.2, 2, 0.08 * Math.PI, 0.92 * Math.PI);
+      ctx.stroke();
+
+      // Little blue flower on top of head
       const flowerX = cx;
-      const flowerY = y + 1.2;
+      const flowerY = y + 0.8;
       const petals = 5;
-      const petalR = 2.3;
+      const petalR = 2.4;
       ctx.fillStyle = '#8fd0ff';
       for (let i = 0; i < petals; i++) {
         const a = (i / petals) * Math.PI * 2 - Math.PI / 2;
-        const px = flowerX + Math.cos(a) * 2;
-        const py = flowerY + Math.sin(a) * 2;
+        const px = flowerX + Math.cos(a) * 2.2;
+        const py = flowerY + Math.sin(a) * 2.2;
         ctx.beginPath();
         ctx.arc(px, py, petalR, 0, Math.PI * 2);
         ctx.fill();
       }
+      // Petal outline
+      ctx.strokeStyle = 'rgba(120, 180, 230, 0.6)';
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < petals; i++) {
+        const a = (i / petals) * Math.PI * 2 - Math.PI / 2;
+        const px = flowerX + Math.cos(a) * 2.2;
+        const py = flowerY + Math.sin(a) * 2.2;
+        ctx.beginPath();
+        ctx.arc(px, py, petalR, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       ctx.fillStyle = '#fff3a6';
       ctx.beginPath();
-      ctx.arc(flowerX, flowerY, 1.4, 0, Math.PI * 2);
+      ctx.arc(flowerX, flowerY, 1.5, 0, Math.PI * 2);
       ctx.fill();
+      ctx.strokeStyle = 'rgba(230, 200, 100, 0.55)';
+      ctx.lineWidth = 0.4;
+      ctx.stroke();
     }
 
     ctx.restore();
@@ -821,18 +1035,79 @@
     draw();
   }
 
+  function setSpeed(mode) {
+    if (!SPEEDS[mode]) return;
+    speedMode = mode;
+    speedBtns.forEach(b => {
+      b.classList.toggle('active', b.dataset.speed === mode);
+    });
+    if (isRunning && !isCountingDown) {
+      if (gameLoop) clearInterval(gameLoop);
+      gameLoop = setInterval(tick, SPEEDS[speedMode]);
+    }
+  }
+
+  function restartTick() {
+    if (gameLoop) clearInterval(gameLoop);
+    gameLoop = setInterval(tick, SPEEDS[speedMode]);
+  }
+
+  function runCountdown(then) {
+    isCountingDown = true;
+    countdownOverlay.classList.remove('hidden');
+    let n = 3;
+    countdownNum.textContent = n;
+    countdownNum.style.animation = 'none';
+    void countdownNum.offsetWidth;
+    countdownNum.style.animation = 'countdown-pop 0.55s ease-out';
+
+    const t = setInterval(() => {
+      n--;
+      if (n <= 0) {
+        clearInterval(t);
+        countdownOverlay.classList.add('hidden');
+        isCountingDown = false;
+        then();
+      } else {
+        countdownNum.textContent = n === 0 ? 'GO!' : n;
+        countdownNum.style.animation = 'none';
+        void countdownNum.offsetWidth;
+        countdownNum.style.animation = 'countdown-pop 0.55s ease-out';
+      }
+    }, 700);
+  }
+
+  function togglePause(force) {
+    if (!isRunning || isCountingDown) return;
+    const next = typeof force === 'boolean' ? force : !isPaused;
+    isPaused = next;
+    if (isPaused) {
+      pauseOverlay.classList.remove('hidden');
+      pauseBtn.textContent = '▶ Resume';
+    } else {
+      pauseOverlay.classList.add('hidden');
+      pauseBtn.textContent = '⏸ Pause';
+    }
+  }
+
   function startGame() {
     init();
-    isRunning = true;
-    startOverlay.classList.add('hidden');
-    gameOverOverlay.classList.add('hidden');
-    if (gameLoop) clearInterval(gameLoop);
-    gameLoop = setInterval(tick, 290);
+    hideAllOverlays();
+    pauseBtn.disabled = false;
+    pauseBtn.textContent = '⏸ Pause';
+
+    runCountdown(() => {
+      isRunning = true;
+      restartTick();
+    });
   }
 
   function gameOver() {
     isRunning = false;
+    isPaused = false;
     clearInterval(gameLoop);
+    pauseBtn.disabled = true;
+    pauseBtn.textContent = '⏸ Pause';
     finalScoreEl.innerHTML =
       `Score: <b style="color:#5a9fd4;">${score}</b> &nbsp;·&nbsp; ` +
       `Best: <b style="color:#c77a95;">${bestScore}</b>`;
@@ -841,34 +1116,55 @@
 
   startBtn.addEventListener('click', startGame);
   restartBtn.addEventListener('click', startGame);
+  restartAlwaysBtn.addEventListener('click', startGame);
+  pauseBtn.addEventListener('click', () => togglePause());
+  resumeBtn.addEventListener('click', () => togglePause(false));
+
+  speedBtns.forEach(b => {
+    b.addEventListener('click', () => setSpeed(b.dataset.speed));
+  });
 
   document.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
-    if (['arrowup','w'].includes(key))    { setDirection('up');    e.preventDefault(); }
-    if (['arrowdown','s'].includes(key))  { setDirection('down');  e.preventDefault(); }
-    if (['arrowleft','a'].includes(key))  { setDirection('left');  e.preventDefault(); }
-    if (['arrowright','d'].includes(key)) { setDirection('right'); e.preventDefault(); }
-    if (key === ' ' && isRunning) {
-      isPaused = !isPaused;
-      e.preventDefault();
+
+    const gameKeys = ['arrowup','arrowdown','arrowleft','arrowright',' ','w','a','s','d'];
+    if (gameKeys.includes(key)) e.preventDefault();
+
+    if (['arrowup','w'].includes(key))    { setDirection('up'); }
+    if (['arrowdown','s'].includes(key))  { setDirection('down'); }
+    if (['arrowleft','a'].includes(key))  { setDirection('left'); }
+    if (['arrowright','d'].includes(key)) { setDirection('right'); }
+    if (key === ' ') {
+      if (isRunning) togglePause();
     }
-    if (key === 'enter' && !isRunning) {
+    if (key === 'enter') {
       startGame();
     }
-  });
+  }, { passive: false });
 
   document.querySelectorAll('.control-btn[data-dir]').forEach(btn => {
-    btn.addEventListener('click', () => setDirection(btn.dataset.dir));
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      setDirection(btn.dataset.dir);
+    });
   });
 
-  let touchStartX = 0, touchStartY = 0;
+  // Canvas swipe controls (prevent scroll at same time)
+  let touchStartX = 0, touchStartY = 0, touchMoved = false;
   canvas.addEventListener('touchstart', (e) => {
     const t = e.touches[0];
     touchStartX = t.clientX;
     touchStartY = t.clientY;
-  }, { passive: true });
+    touchMoved = false;
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    touchMoved = true;
+  }, { passive: false });
 
   canvas.addEventListener('touchend', (e) => {
+    if (!touchMoved) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - touchStartX;
     const dy = t.clientY - touchStartY;
@@ -878,11 +1174,15 @@
     } else {
       setDirection(dy > 0 ? 'down' : 'up');
     }
-  }, { passive: true });
+  }, { passive: false });
+
+  // Prevent page scrolling when interacting with the game container
+  document.querySelector('.game-container').addEventListener('touchmove', (e) => {
+    e.preventDefault();
+  }, { passive: false });
 
   init();
 })();
 </script>
 </body>
 </html>
- 
